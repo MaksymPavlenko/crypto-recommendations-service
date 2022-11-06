@@ -32,9 +32,9 @@ public class CryptoPricesRepositoryConfiguration {
 
     @Bean
     public CryptoPricesRepository cryptoPricesRepository(
-            @Value("${crypto.supported}") final Set<String> supportedCryptos
+            @Value("${crypto.supported}") final Set<String> supportedCryptoSymbols
     ) throws CsvReaderException {
-        return new CryptoPricesRepository(getCryptoPrices(supportedCryptos));
+        return new CryptoPricesRepository(getCryptoPrices(supportedCryptoSymbols));
     }
 
     private Map<String, List<CryptoPrice>> getCryptoPrices(Set<String> supportedCryptos) {

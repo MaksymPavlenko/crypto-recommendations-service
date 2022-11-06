@@ -6,3 +6,6 @@ crypto:
     ETH,
     LTC,
     XRP
+
+calculations:
+  scale: 4

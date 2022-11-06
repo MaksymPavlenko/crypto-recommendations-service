@@ -17,15 +17,15 @@ class CryptoPricesRepositoryTest {
     private static final String BTC = "BTC", ETH = "ETH", XRP = "XRP";
 
     @Test
-    void shouldReturnCryptos() {
+    void shouldReturnSymbols() {
         // Given
         val repository = new CryptoPricesRepository(Map.of(BTC, List.of(), ETH, List.of(), XRP, List.of()));
 
         // When
-        val cryptos = repository.getCryptos();
+        val symbols = repository.getSymbols();
 
         // Then
-        assertThat(cryptos).containsExactlyInAnyOrder(BTC, ETH, XRP);
+        assertThat(symbols).containsExactlyInAnyOrder(BTC, ETH, XRP);
     }
 
     @Test
@@ -68,7 +68,7 @@ class CryptoPricesRepositoryTest {
         // When Then
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> repository.getMinPrice(XRP))
-                .withMessage("Such crypto currency is not supported");
+                .withMessage("Such symbol currency is not supported");
     }
 
     @Test
@@ -79,7 +79,7 @@ class CryptoPricesRepositoryTest {
         // When Then
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> repository.getMaxPrice(XRP))
-                .withMessage("Such crypto currency is not supported");
+                .withMessage("Such symbol currency is not supported");
     }
 
     @Test
