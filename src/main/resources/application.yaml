@@ -1,0 +1,8 @@
+crypto:
+  pricesLocation: prices
+  supported: >
+    BTC,
+    DOGE,
+    ETH,
+    LTC,
+    XRP
