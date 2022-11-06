@@ -1,5 +1,6 @@
 package com.crs.cryptorecommendationsservice.service;
 
+import com.crs.cryptorecommendationsservice.model.CryptocurrencyDetails;
 import com.crs.cryptorecommendationsservice.model.NormalizedRange;
 import com.crs.cryptorecommendationsservice.model.NormalizedRanges;
 import com.crs.cryptorecommendationsservice.repository.CryptoPricesRepository;
@@ -40,10 +41,19 @@ public class RecommendationsService {
     }
 
     private NormalizedRange getNormalizedRange(String symbol) {
-        val minPrice = repository.getMinPrice(symbol);
-        val maxPrice = repository.getMaxPrice(symbol);
+        val minPrice = repository.getMinPrice(symbol).value();
+        val maxPrice = repository.getMaxPrice(symbol).value();
         val value = maxPrice.subtract(minPrice).divide(minPrice, scale, RoundingMode.HALF_UP).stripTrailingZeros();
         return new NormalizedRange(symbol, value);
     }
 
+    public CryptocurrencyDetails getCryptocurrencyDetails(final String symbol) {
+        return new CryptocurrencyDetails(
+                symbol,
+                repository.getOldestPrice(symbol),
+                repository.getNewestPrice(symbol),
+                repository.getMinPrice(symbol),
+                repository.getMaxPrice(symbol)
+        );
+    }
 }

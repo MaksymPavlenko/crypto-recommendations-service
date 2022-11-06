@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import static com.crs.cryptorecommendationsservice.TestUtils.createCryptoPrice;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RecommendationsServiceTest {
@@ -24,10 +25,10 @@ class RecommendationsServiceTest {
     void shouldReturnNormalizedRangesInDecreasingOrder() {
         // Given
         Mockito.when(repository.getSymbols()).thenReturn(Set.of(BTC, ETH));
-        Mockito.when(repository.getMinPrice(BTC)).thenReturn(BigDecimal.valueOf(40000));
-        Mockito.when(repository.getMaxPrice(BTC)).thenReturn(BigDecimal.valueOf(50000));
-        Mockito.when(repository.getMinPrice(ETH)).thenReturn(BigDecimal.valueOf(3000));
-        Mockito.when(repository.getMaxPrice(ETH)).thenReturn(BigDecimal.valueOf(4000));
+        Mockito.when(repository.getMinPrice(BTC)).thenReturn(createCryptoPrice(40000));
+        Mockito.when(repository.getMaxPrice(BTC)).thenReturn(createCryptoPrice(50000));
+        Mockito.when(repository.getMinPrice(ETH)).thenReturn(createCryptoPrice(3000));
+        Mockito.when(repository.getMaxPrice(ETH)).thenReturn(createCryptoPrice(4000));
 
         // When
         val normalizedRanges = service.getNormalizedRanges();
@@ -38,6 +39,29 @@ class RecommendationsServiceTest {
         assertThat(normalizedRanges.normalizedRanges().get(0).value()).isEqualTo(BigDecimal.valueOf(0.3333));
         assertThat(normalizedRanges.normalizedRanges().get(1).symbol()).isEqualTo(BTC);
         assertThat(normalizedRanges.normalizedRanges().get(1).value()).isEqualTo(BigDecimal.valueOf(0.25));
+    }
+
+    @Test
+    void shouldReturnCryptocurrencyDetails() {
+        // Given
+        val oldestPrice = createCryptoPrice(50000, -86400);
+        val newestPrice = createCryptoPrice(52000, +86400);
+        val minPrice = createCryptoPrice(48000);
+        val maxPrice = createCryptoPrice(55000);
+        Mockito.when(repository.getOldestPrice(BTC)).thenReturn(oldestPrice);
+        Mockito.when(repository.getNewestPrice(BTC)).thenReturn(newestPrice);
+        Mockito.when(repository.getMinPrice(BTC)).thenReturn(minPrice);
+        Mockito.when(repository.getMaxPrice(BTC)).thenReturn(maxPrice);
+
+        // When
+        val details = service.getCryptocurrencyDetails(BTC);
+
+        // Then
+        assertThat(details.symbol()).isEqualTo(BTC);
+        assertThat(details.oldestPrice()).isEqualTo(oldestPrice);
+        assertThat(details.newestPrice()).isEqualTo(newestPrice);
+        assertThat(details.minPrice()).isEqualTo(minPrice);
+        assertThat(details.maxPrice()).isEqualTo(maxPrice);
     }
 
 }

@@ -1,16 +1,16 @@
 package com.crs.cryptorecommendationsservice.repository;
 
-import com.crs.cryptorecommendationsservice.model.CryptoPrice;
+import com.crs.cryptorecommendationsservice.exception.NoPricesFoundException;
+import com.crs.cryptorecommendationsservice.exception.UnsupportedCryptocurrencyException;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
-import static org.assertj.core.api.Assertions.*;
+import static com.crs.cryptorecommendationsservice.TestUtils.createCryptoPrice;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CryptoPricesRepositoryTest {
 
@@ -31,72 +31,70 @@ class CryptoPricesRepositoryTest {
     @Test
     void shouldReturnMinPrice() {
         // Given
+        val minPrice = createCryptoPrice(1);
         val repository = new CryptoPricesRepository(Map.of(
                 BTC,
-                List.of(
-                        new CryptoPrice(Instant.EPOCH, BigDecimal.ONE),
-                        new CryptoPrice(Instant.EPOCH, BigDecimal.ZERO),
-                        new CryptoPrice(Instant.EPOCH, BigDecimal.TEN)
-                )
+                List.of(createCryptoPrice(10), minPrice, createCryptoPrice(1))
         ));
 
         // When Then
-        assertThat(repository.getMinPrice(BTC)).isEqualTo(BigDecimal.ZERO);
+        assertThat(repository.getMinPrice(BTC)).isEqualTo(minPrice);
     }
 
     @Test
     void shouldReturnMaxPrice() {
         // Given
+        val maxPrice = createCryptoPrice(10);
         val repository = new CryptoPricesRepository(Map.of(
                 BTC,
-                List.of(
-                        new CryptoPrice(Instant.EPOCH, BigDecimal.ZERO),
-                        new CryptoPrice(Instant.EPOCH, BigDecimal.TEN),
-                        new CryptoPrice(Instant.EPOCH, BigDecimal.ONE)
-                )
+                List.of(createCryptoPrice(0), maxPrice, createCryptoPrice(1))
         ));
 
         // When Then
-        assertThat(repository.getMaxPrice(BTC)).isEqualTo(BigDecimal.TEN);
+        assertThat(repository.getMaxPrice(BTC)).isEqualTo(maxPrice);
     }
 
     @Test
-    void shouldThrowIllegalStateExceptionGivenUnknownCryptoForMinPrice() {
+    void shouldReturnOldestPrice() {
+        // Given
+        val oldestPrice = createCryptoPrice(1, -5);
+        val repository = new CryptoPricesRepository(Map.of(
+                BTC,
+                List.of(oldestPrice, createCryptoPrice(10), createCryptoPrice(1))
+        ));
+
+        // When Then
+        assertThat(repository.getOldestPrice(BTC)).isEqualTo(oldestPrice);
+    }
+
+    @Test
+    void shouldReturnNewestPrice() {
+        // Given
+        val newestPrice = createCryptoPrice(10, 5);
+        val repository = new CryptoPricesRepository(Map.of(
+                BTC,
+                List.of(createCryptoPrice(0), createCryptoPrice(1), newestPrice)
+        ));
+
+        // When Then
+        assertThat(repository.getMaxPrice(BTC)).isEqualTo(newestPrice);
+    }
+
+    @Test
+    void shouldThrowUnsupportedCryptocurrencyExceptionGivenUnknownCryptocurrency() {
         // Given
         val repository = new CryptoPricesRepository(Map.of(BTC, List.of()));
 
         // When Then
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> repository.getMinPrice(XRP))
-                .withMessage("Such symbol currency is not supported");
+        assertThatThrownBy(() -> repository.getValidPrices(XRP)).isInstanceOf(UnsupportedCryptocurrencyException.class);
     }
 
     @Test
-    void shouldThrowIllegalStateExceptionGivenUnknownCryptoForMaxPrice() {
+    void shouldThrowNoPricesFoundExceptionGivenNoPricesForSpecifiedCryptocurrency() {
         // Given
         val repository = new CryptoPricesRepository(Map.of(BTC, List.of()));
 
         // When Then
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> repository.getMaxPrice(XRP))
-                .withMessage("Such symbol currency is not supported");
-    }
-
-    @Test
-    void shouldThrowNoSuchElementExceptionGivenNoPricesForMinPrice() {
-        // Given
-        val repository = new CryptoPricesRepository(Map.of(BTC, List.of()));
-
-        // When Then
-        assertThatThrownBy(() -> repository.getMinPrice(BTC)).isInstanceOf(NoSuchElementException.class);
-    }
-
-    @Test
-    void shouldThrowNoSuchElementExceptionGivenNoPricesForMaxPrice() {
-        // Given
-        val repository = new CryptoPricesRepository(Map.of(BTC, List.of()));
-
-        // When Then
-        assertThatThrownBy(() -> repository.getMaxPrice(BTC)).isInstanceOf(NoSuchElementException.class);
+        assertThatThrownBy(() -> repository.getValidPrices(BTC)).isInstanceOf(NoPricesFoundException.class);
     }
 }

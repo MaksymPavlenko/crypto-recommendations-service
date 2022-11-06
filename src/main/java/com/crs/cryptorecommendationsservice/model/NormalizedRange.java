@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  * Normalized cryptocurrency range
  *
  * @param symbol cryptocurrency symbol i.e. BTC, ETH
- * @param value  equals to (max - min) / min of cryptocurrency's price during a certain period.
+ * @param value  equals to (max - min) / min of cryptocurrency price value during a certain period.
  *               Is an indicator of volatility
  */
 public record NormalizedRange(

@@ -5,11 +5,11 @@ package com.crs.cryptorecommendationsservice.exception;
  */
 public class CsvReaderException extends RuntimeException {
 
-    public CsvReaderException(String message) {
+    public CsvReaderException(final String message) {
         super(message);
     }
 
-    public CsvReaderException(String message, Throwable cause) {
+    public CsvReaderException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }
